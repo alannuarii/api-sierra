@@ -1,7 +1,7 @@
 const db = require("../db/connection");
 const authUtils = require("../utils/authUtils");
 const jwt = require("jsonwebtoken");
-const env = require("../utils/env");
+require("dotenv").config();
 
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -34,7 +34,7 @@ const login = (req, res) => {
           email: result[0].email,
           role: result[0].role,
         },
-        env.secretKey,
+        process.env.SECRET_KEY,
         { expiresIn: "1h" }
       );
       //   res.header("x-access-token", token);

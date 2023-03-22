@@ -8,8 +8,8 @@ const cors = require("cors");
 
 // Add Middleware
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 // Main Route
@@ -18,5 +18,5 @@ app.use("/", router);
 // Running Port
 app.listen(port, () => {
   // Command : npm run dev
-  console.log(`Example app listening on port http://localhost:${port}`);
+  console.log(`Example app listening on port http://127.0.0.1::${port}`);
 });
