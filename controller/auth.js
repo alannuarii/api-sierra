@@ -5,6 +5,7 @@ require("dotenv").config();
 
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
+  console.log(req.body);
   const hashPassword = await authUtils.setPassword(password);
   const sql = `INSERT INTO user (name, email, password, role) VALUES ('${name}', '${email}', '${hashPassword}', '${role}')`;
   db.query(sql, (error, result) => {
