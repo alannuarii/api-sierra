@@ -5,26 +5,34 @@ require("dotenv").config();
 
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
-  console.log(req.body);
   const hashPassword = await authUtils.setPassword(password);
-  const sql = `INSERT INTO user (name, email, password, role) VALUES ('${name}', '${email}', '${hashPassword}', '${role}')`;
-  db.query(sql, (error, result) => {
+  const sql = `INSERT INTO user (name, email, password, role) VALUES (?, ?, ?, ?)`;
+  const values = [name, email, hashPassword, role];
+
+  db.query(sql, values, (error, result) => {
     if (error) {
+      console.error(error);
       res.status(400).json({ message: "Gagal input data" });
+    } else {
+      res.status(200).json({ message: "Data berhasil dikirim" });
     }
-    res.status(200).json({ message: "Data berhasil dikirim" });
   });
+  db.end();
 };
 
 const login = (req, res) => {
   const { email, password } = req.body;
-  const sql = `SELECT * FROM user WHERE email = '${email}'`;
-  db.query(sql, async (error, result) => {
+  const sql = "SELECT * FROM user WHERE email = ?";
+  db.query(sql, [email], async (error, result) => {
+    if (error) {
+      return res.status(500).json({
+        message: "Internal server error",
+      });
+    }
     if (result.length < 1) {
-      res.status(401).json({
+      return res.status(401).json({
         message: "Email tidak ditemukan",
       });
-      return;
     }
     const checkPassword = await authUtils.checkPassword(password, result[0].password);
     if (checkPassword) {
@@ -38,17 +46,17 @@ const login = (req, res) => {
         process.env.SECRET_KEY,
         { expiresIn: "1h" }
       );
-      //   res.header("x-access-token", token);
-      res.status(200).json({
+      return res.status(200).json({
         message: "Login berhasil",
         access_token: token,
       });
     } else {
-      res.status(401).json({
+      return res.status(401).json({
         message: "Password tidak sesuai",
       });
     }
   });
+  db.end();
 };
 
 module.exports = { login, register };
