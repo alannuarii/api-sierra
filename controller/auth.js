@@ -2,6 +2,8 @@ const db = require("../db/connection");
 const authUtils = require("../utils/authUtils");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const NodeCache = require("node-cache");
+const cache = new NodeCache();
 
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -23,6 +25,13 @@ const register = async (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.body;
   const sql = "SELECT * FROM user WHERE email = ?";
+  
+  // cek apakah respons tersedia dalam cache
+  const cachedResult = cache.get(email);
+  if (cachedResult) {
+    return res.status(200).json(cachedResult);
+  }
+
   db.query(sql, [email], async (error, result) => {
     if (error) {
       return res.status(500).json({
@@ -46,10 +55,13 @@ const login = (req, res) => {
         process.env.SECRET_KEY,
         { expiresIn: "1h" }
       );
-      return res.status(200).json({
+      const response = {
         message: "Login berhasil",
         access_token: token,
-      });
+      };
+      // set respons ke dalam cache dengan key yang unik (misalnya email)
+      cache.set(email, response, 60 * 5); // cache selama 5 menit
+      return res.status(200).json(response);
     } else {
       return res.status(401).json({
         message: "Password tidak sesuai",
