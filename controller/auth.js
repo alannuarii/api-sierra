@@ -17,7 +17,6 @@ const register = async (req, res) => {
       res.status(200).json({ message: "Data berhasil dikirim" });
     }
   });
-  db.end();
 };
 
 const login = (req, res) => {
@@ -58,7 +57,6 @@ const login = (req, res) => {
       });
     }
   });
-  db.end();
 };
 
 module.exports = { login, register };
